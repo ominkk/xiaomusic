@@ -84,6 +84,8 @@ class XiaoMusic:
 
         self.log.debug("ffmpeg_location: %s", self.ffmpeg_location)
 
+        self.playing = False
+
     async def poll_latest_ask(self):
         async with ClientSession() as session:
             session._cookie_jar = self.cookie_jar
@@ -476,14 +478,19 @@ class XiaoMusic:
             )
             oparg = argafter
             opvalue = KEY_WORD_DICT[opkey]
+            if not self.playing and opvalue != "play":
+                continue
             if opkey in KEY_WORD_ARG_BEFORE_DICT:
                 oparg = argpre
             self.log.info("匹配到指令. opkey:%s opvalue:%s oparg:%s", opkey, opvalue, oparg)
             return (opvalue, oparg)
+        if self.playing:
+            return ("stop", "")
         return (None, None)
 
     # 播放歌曲
     async def play(self, **kwargs):
+        self.playing = True
         name = kwargs["arg1"]
         if name == "":
             await self.play_next()
