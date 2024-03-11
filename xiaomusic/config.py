@@ -42,7 +42,8 @@ KEY_WORD_DICT = {
     "循环播放": "set_play_type_all",
     "随机播放": "random_play",
     "关机": "stop",
-    "停止播放": "stop",
+    "暂停": "stop",
+    "停止": "stop",
     "分钟后关机": "stop_after_minute",
     "set_volume#": "set_volume",
 }
@@ -64,7 +65,8 @@ KEY_MATCH_ORDER = [
     "循环播放",
     "随机播放",
     "关机",
-    "停止播放",
+    "暂停",
+    "停止",
 ]
 
 SUPPORT_MUSIC_TYPE = [

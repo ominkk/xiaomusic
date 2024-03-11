@@ -485,7 +485,7 @@ class XiaoMusic:
             self.log.info("匹配到指令. opkey:%s opvalue:%s oparg:%s", opkey, opvalue, oparg)
             return (opvalue, oparg)
         if self.playing:
-            return ("stop", "")
+            return ("stop", {})
         return (None, None)
 
     # 播放歌曲
@@ -545,6 +545,7 @@ class XiaoMusic:
         await self.play_next()
 
     async def stop(self, **kwargs):
+        self.playing = False
         if self._next_timer:
             self._next_timer.cancel()
             self.log.info(f"定时器已取消")
