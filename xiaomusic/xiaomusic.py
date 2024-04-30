@@ -30,6 +30,7 @@ from xiaomusic.config import (
 from xiaomusic.utils import (
     calculate_tts_elapse,
     parse_cookie_string,
+    fuzzyfinder,
 )
 
 EOF = object()
@@ -301,7 +302,7 @@ class XiaoMusic:
         return True
 
     # 下载歌曲
-    async def download(self, name):
+    async def download(self, search_key, name):
         if self.download_proc:
             try:
                 self.download_proc.kill()
@@ -310,7 +311,7 @@ class XiaoMusic:
 
         sbp_args = (
             "yt-dlp",
-            f"{self.search_prefix}{name}",
+            f"{self.search_prefix}{search_key}",
             "-x",
             "--audio-format",
             "mp3",
@@ -327,11 +328,12 @@ class XiaoMusic:
             sbp_args += ("--proxy", f"{self.proxy}")
 
         self.download_proc = await asyncio.create_subprocess_exec(*sbp_args)
-        await self.do_tts(f"正在下载歌曲{name}")
+        await self.do_tts(f"正在下载歌曲{search_key}")
 
     # 本地是否存在歌曲
     def get_filename(self, name):
         if name not in self._all_music:
+            self.log.debug("get_filename not in. name:%s", name)
             return ""
         filename = self._all_music[name]
         self.log.debug("try get_filename. filename:%s", filename)
@@ -482,7 +484,9 @@ class XiaoMusic:
                 continue
             if opkey in KEY_WORD_ARG_BEFORE_DICT:
                 oparg = argpre
-            self.log.info("匹配到指令. opkey:%s opvalue:%s oparg:%s", opkey, opvalue, oparg)
+            self.log.info(
+                "匹配到指令. opkey:%s opvalue:%s oparg:%s", opkey, opvalue, oparg
+            )
             return (opvalue, oparg)
         if self.playing:
             return ("stop", {})
@@ -491,15 +495,20 @@ class XiaoMusic:
     # 播放歌曲
     async def play(self, **kwargs):
         self.playing = True
-        name = kwargs["arg1"]
-        if name == "":
+        parts = kwargs["arg1"].split("|")
+        search_key = parts[0]
+        name = parts[1] if len(parts) > 1 else search_key
+        if search_key == "" and name == "":
             await self.play_next()
             return
-
+        if name == "":
+            name = search_key
+        self.log.debug("play. search_key:%s name:%s", search_key, name)
         filename = self.get_filename(name)
+
         if len(filename) <= 0:
-            await self.download(name)
-            self.log.info("正在下载中 %s", name)
+            await self.download(search_key, name)
+            self.log.info("正在下载中 %s", search_key + ":" + name)
             await self.download_proc.wait()
             # 把文件插入到播放列表里
             self.add_download_music(name)
@@ -575,3 +584,14 @@ class XiaoMusic:
 
     def get_volume(self):
         return self._volume
+
+    # 搜索音乐
+    def searchmusic(self, name):
+        search_list = fuzzyfinder(name, self._play_list)
+        self.log.debug("searchmusic. name:%s search_list:%s", name, search_list)
+        return search_list
+
+    # 正在播放中的音乐
+    def playingmusic(self):
+        self.log.debug("playingmusic. cur_music:%s", self.cur_music)
+        return self.cur_music

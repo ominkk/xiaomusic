@@ -131,7 +131,9 @@ services:
 
 - ip 是 XIAOMUSIC_HOSTNAME 设置的
 - 8090 是默认端口
-
+- 新功能
+    - 显示正在播放的歌曲
+    - 模糊搜索本地歌曲
 
 ## 感谢
 
@@ -140,7 +142,8 @@ services:
 - [xiaogpt](https://github.com/yihong0618/xiaogpt)
 - [MiService](https://github.com/yihong0618/MiService)
 - [yt-dlp](https://github.com/yt-dlp/yt-dlp)
-
+- [NAS部署教程](https://post.m.smzdm.com/p/avpe7n99/)
+- [群晖部署教程](https://post.m.smzdm.com/p/a7px7dol/)
 
 ## Star History
 

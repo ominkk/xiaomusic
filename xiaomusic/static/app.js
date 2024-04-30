@@ -39,8 +39,9 @@ $(function(){
   }
 
   $("#play").on("click", () => {
-    name = $("#music-name").val();
-    let cmd = "播放歌曲"+name;
+    var search_key = $("#music-name").val();
+    var filename=$("#music-filename").val();
+    let cmd = "播放歌曲"+search_key+"|"+filename;
     sendcmd(cmd);
   });
 
@@ -63,4 +64,39 @@ $(function(){
       }
     });
   }
+
+  // 监听输入框的输入事件
+  $("#music-name").on('input', function() {
+    var inputValue = $(this).val();
+    // 发送Ajax请求
+    $.ajax({
+      url: "searchmusic", // 服务器端处理脚本
+      type: "GET",
+      dataType: "json",
+      data: {
+        name: inputValue
+      },
+      success: function(data) {
+        // 清空datalist
+        $("#autocomplete-list").empty();
+        // 添加新的option元素
+        $.each(data, function(i, item) {
+          $('<option>').val(item).appendTo("#autocomplete-list");
+        });
+      }
+    });
+  });
+
+  function get_playing_music() {
+    $.get("/playingmusic", function(data, status) {
+      console.log(data);
+      $("#playering-music").text(data);
+    });
+  }
+
+  // 每3秒获取下正在播放的音乐
+  get_playing_music();
+  setInterval(() => {
+    get_playing_music();
+  }, 3000);
 });
